@@ -33,7 +33,7 @@ jobs:
         -l trx -r bin/Release/TestResults/${{ matrix.platform }}
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
-        DOTNET_NOLOGO: 1
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
 
     - uses: actions/upload-artifact@v2
       if: success() || steps.test.outcome == 'failure'
@@ -49,6 +49,9 @@ jobs:
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '3.1.201'
+        source-url: https://nuget.pkg.github.com/heaths/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - run: >
         dotnet pack KeyVaultProxy.sln
@@ -56,15 +59,12 @@ jobs:
         --version-suffix 'preview.${{ github.run_number }}'
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
-        DOTNET_NOLOGO: 1
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
 
     - uses: actions/upload-artifact@v2
       with:
         name: artifacts
         path: bin/Release/*.nupkg
 
-    - run: >
-        dotnet nuget push bin/Release/*.nupkg
-        -s https://nuget.pkg.github.com/heaths/index.json
-        -k ${{ secrets.GITHUB_TOKEN }}
+    - run: dotnet nuget push bin/Release/*.nupkg
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
