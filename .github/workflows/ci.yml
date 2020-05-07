@@ -62,3 +62,9 @@ jobs:
       with:
         name: artifacts
         path: bin/Release/*.nupkg
+
+    - run: >
+        dotnet nuget push bin/Release/*.nupkg
+        -s https://nuget.pkg.github.com/heaths/index.json
+        -k ${{ secrets.GITHUB_TOKEN }}
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
