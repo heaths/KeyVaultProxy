@@ -3,6 +3,10 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <Authors>heaths</Authors>
+    <Description>A sample pipeline policy to cache secrets, keys, and certificates in-memory.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/heaths/KeyVaultProxy</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
