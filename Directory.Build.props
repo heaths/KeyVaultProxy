@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
-    <GenerateDocumentation>true</GenerateDocumentation>
+    <RootNamespace>Sample</RootNamespace>
     <LangVersion>latest</LangVersion>
+    <GenerateDocumentation>true</GenerateDocumentation>
   </PropertyGroup>
 </Project>
