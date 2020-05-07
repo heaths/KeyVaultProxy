@@ -11,12 +11,12 @@ using Xunit;
 
 namespace Sample
 {
-    public class KeyVaultProxyLiveTests : IClassFixture<SecretsFixture>, IDisposable
+    public partial class KeyVaultProxyTests : IClassFixture<SecretsFixture>, IDisposable
     {
         private readonly SecretsFixture _fixture;
         private readonly AzureEventSourceListener _logger;
 
-        public KeyVaultProxyLiveTests(SecretsFixture fixture)
+        public KeyVaultProxyTests(SecretsFixture fixture)
         {
             _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             _logger = AzureEventSourceListener.CreateConsoleLogger(EventLevel.Verbose);

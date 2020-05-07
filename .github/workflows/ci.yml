@@ -1,0 +1,58 @@
+on:
+  - pull_request
+  - push
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+        - macos-latest
+        - ubuntu-latest
+        - windows-latest
+        include:
+        - os: macos-latest
+          platform: macos
+        - os: ubuntu-latest
+          platform: linux
+        - os: windows-latest
+          platform: windows
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.100'
+
+    - id: test
+      run: >
+        dotnet test KeyVaultProxy.sln
+        -c Release -o bin/Release
+        -l trx -r bin/Release/TestResults/${{ matrix.platform }}
+
+    - uses: actions/upload-artifact@v2
+      if: success() || steps.test.outcome == 'failure'
+      with:
+        name: testresults-${{ matrix.platform }}
+        path: bin/Release/TestResults/
+
+  pack:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.100'
+
+    - run: >
+        dotnet pack KeyVaultProxy.sln
+        -c Release -o bin/Release
+        --version-suffix 'preview.${{ github.run_number }}'
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: artifacts
+        path: bin/Release/*.nupkg

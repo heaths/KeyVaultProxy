@@ -1,12 +1,20 @@
 ﻿// Copyright 2020 Heath Stewart.
 // Licensed under the MIT License.See LICENSE.txt in the project root for license information.
 
+using System;
 using Xunit;
 
 namespace Sample
 {
-    public class KeyVaultProxyUnitTests
+    public partial class KeyVaultProxyTests
     {
+        [Fact]
+        public void DefaultTtl()
+        {
+            KeyVaultProxy proxy = new KeyVaultProxy();
+            Assert.Equal(TimeSpan.FromHours(1), proxy.Ttl);
+        }
+
         [Theory]
         [InlineData("https://test.vault.azure.net/secrets/", true)]
         [InlineData("https://test.vault.azure.net/secrets/?api-version=7.0", true)]

@@ -23,12 +23,13 @@ namespace Sample
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="ttl"/> is less than 0.</exception>
         public KeyVaultProxy(TimeSpan? ttl = null)
         {
-            Ttl = ttl ?? TimeSpan.FromHours(1);
+            ttl ??= TimeSpan.FromHours(1);
             if (ttl < TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(nameof(ttl));
             }
 
+            Ttl = ttl.Value;
             _cache = new MemoryCache();
         }
 

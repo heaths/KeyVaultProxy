@@ -10,7 +10,6 @@ namespace Sample
 {
     public class LiveFactDiscoverer : IXunitTestCaseDiscoverer
     {
-        private static bool? _hasEnvironmentVariables;
         private readonly IMessageSink _diagnosticMessageSink;
 
         public LiveFactDiscoverer(IMessageSink diagnosticMessageSink)
@@ -20,18 +19,9 @@ namespace Sample
 
         public IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo factAttribute)
         {
-            yield return new LiveTestCase(_diagnosticMessageSink, discoveryOptions, testMethod, false, SkipReason);
-            yield return new LiveTestCase(_diagnosticMessageSink, discoveryOptions, testMethod, true, SkipReason);
+            yield return new LiveTestCase(_diagnosticMessageSink, discoveryOptions, testMethod, false);
+            yield return new LiveTestCase(_diagnosticMessageSink, discoveryOptions, testMethod, true);
         }
-
-        private static bool HasEnvironmentVariables => _hasEnvironmentVariables ??=
-            Environment.GetEnvironmentVariable("AZURE_TENANT_ID") != null &&
-            Environment.GetEnvironmentVariable("AZURE_CLIENT_ID") != null &&
-            Environment.GetEnvironmentVariable("AZURE_CLIENT_SECRET") != null &&
-            Environment.GetEnvironmentVariable("AZURE_KEYVAULT_URL") != null;
-
-        private static string SkipReason => HasEnvironmentVariables ?
-            null : "Missing one or more environment variables for live tests: AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, or AZURE_KEYVAULT_URL";
 
         private class LiveTestCase : XunitTestCase
         {
@@ -40,24 +30,26 @@ namespace Sample
             {
             }
 
-            public LiveTestCase(IMessageSink diagnosticMessageSink, ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, bool isAsync, string skipReason)
+            public LiveTestCase(IMessageSink diagnosticMessageSink, ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, bool isAsync)
                 : base(diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), discoveryOptions.MethodDisplayOptionsOrDefault(), testMethod, new object[] { isAsync })
             {
-                SkipReason = skipReason;
+                IsAsync = isAsync;
             }
+
+            public bool IsAsync { get; private set; }
 
             public override void Serialize(IXunitSerializationInfo data)
             {
                 base.Serialize(data);
 
-                data.AddValue(nameof(SkipReason), SkipReason);
+                data.AddValue(nameof(IsAsync), IsAsync);
             }
 
             public override void Deserialize(IXunitSerializationInfo data)
             {
                 base.Deserialize(data);
 
-                SkipReason = data.GetValue<string>(nameof(SkipReason));
+                IsAsync = data.GetValue<bool>(nameof(IsAsync));
             }
         }
     }
