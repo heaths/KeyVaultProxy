@@ -24,13 +24,16 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.100'
+        dotnet-version: '2.1.805'
 
     - id: test
       run: >
         dotnet test KeyVaultProxy.sln
         -c Release -o bin/Release
         -l trx -r bin/Release/TestResults/${{ matrix.platform }}
+      env:
+        DOTNET_CLI_TELEMETRY_OPTOUT: 1
+        DOTNET_NOLOGO: 1
 
     - uses: actions/upload-artifact@v2
       if: success() || steps.test.outcome == 'failure'
@@ -45,12 +48,15 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.100'
+        dotnet-version: '2.1.805'
 
     - run: >
         dotnet pack KeyVaultProxy.sln
         -c Release -o bin/Release
         --version-suffix 'preview.${{ github.run_number }}'
+      env:
+        DOTNET_CLI_TELEMETRY_OPTOUT: 1
+        DOTNET_NOLOGO: 1
 
     - uses: actions/upload-artifact@v2
       with:
