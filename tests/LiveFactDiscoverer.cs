@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -37,6 +39,21 @@ namespace Sample
             }
 
             public bool IsAsync { get; private set; }
+
+            public override async Task<RunSummary> RunAsync(IMessageSink diagnosticMessageSink, IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
+            {
+                // Clear the cache if SecretsFixture was passed to the test class constructor.
+                if (constructorArguments is { } && constructorArguments.Length == 1 && constructorArguments[0] is SecretsFixture fixture)
+                {
+                    fixture.Reset();
+                }
+                else
+                {
+                    aggregator.Add(new InvalidOperationException($"A single test class constructor argument of type {nameof(SecretsFixture)} was expected."));
+                }
+
+                return await base.RunAsync(diagnosticMessageSink, messageBus, constructorArguments, aggregator, cancellationTokenSource).ConfigureAwait(false);
+            }
 
             public override void Serialize(IXunitSerializationInfo data)
             {

@@ -37,7 +37,7 @@ namespace Sample
             Client = new SecretClient(new Uri("https://test.vault.azure.net"), new NullCredential(), options);
         }
 
-        public void Clear() => _proxy.Clear();
+        public void Reset() => _proxy.Clear();
 
         private MockResponse CreateResponse(MockRequest request)
         {

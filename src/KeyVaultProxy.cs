@@ -14,7 +14,7 @@ namespace Sample
     /// </summary>
     public class KeyVaultProxy : HttpPipelinePolicy
     {
-        private readonly MemoryCache _cache;
+        private readonly Cache _cache;
 
         /// <summary>
         /// Creates a new instance of the <see cref="KeyVaultProxy"/> class.
@@ -30,7 +30,7 @@ namespace Sample
             }
 
             Ttl = ttl.Value;
-            _cache = new MemoryCache();
+            _cache = new Cache();
         }
 
         /// <summary>
@@ -78,9 +78,9 @@ namespace Sample
             string uri = request.Uri.ToUri().GetLeftPart(UriPartial.Path);
             bool isSupported = IsSupported(uri);
 
-            if (isSupported && _cache.TryGetValue(uri, out CacheItem item) && item.IsValid)
+            if (isSupported && _cache.TryGetValue(uri, out CachedResponse? cachedResponse))
             {
-                message.Response = item.CreateResponse();
+                message.Response = await cachedResponse.CloneAsync(isAsync);
                 return;
             }
 
@@ -89,11 +89,7 @@ namespace Sample
             Response response = message.Response;
             if (isSupported && response.Status == 200 && response.ContentStream is { })
             {
-                _cache.AddOrUpdate(
-                    uri,
-                    async () => await CacheItem.CreateAsync(isAsync, response, Ttl).ConfigureAwait(false),
-                    item => item.Update(Ttl)
-                );
+                await _cache.AddAsync(uri, () => CachedResponse.CreateAsync(isAsync, response, Ttl));
             }
         }
 

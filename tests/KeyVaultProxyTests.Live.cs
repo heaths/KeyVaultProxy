@@ -27,9 +27,7 @@ namespace Sample
         [LiveFact]
         public async Task CachesResponse(bool isAsync)
         {
-            _fixture.Clear();
-
-            Response<KeyVaultSecret> response = null;
+            Response<KeyVaultSecret> response;
             if (isAsync)
             {
                 response = await _fixture.Client.GetSecretAsync(_fixture.SecretName);
