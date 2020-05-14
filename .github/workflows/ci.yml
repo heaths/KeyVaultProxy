@@ -1,6 +1,13 @@
+name: ci
 on:
-  - pull_request
-  - push
+  pull_request:
+    paths-ignore:
+    - '**.md'
+  push:
+    branches:
+    - master
+    paths-ignore:
+    - '**.md'
 
 jobs:
   build:
