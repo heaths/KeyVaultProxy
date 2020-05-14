@@ -28,7 +28,10 @@ All HTTP clients for Azure.* packages allow you to customize the HTTP pipeline u
 SecretClientOptions options = new SecretClientOptions();
 options.AddPolicy(new KeyVaultProxy(), HttpPipelinePosition.PerCall);
 
-SecretClient client = new SecretClient(new Uri("https://myvault.vault.azure.net"), new DefaultAzureCredential(), options);
+SecretClient client = new SecretClient(
+    new Uri("https://myvault.vault.azure.net"),
+    new DefaultAzureCredential(),
+    options);
 ```
 
 Whenever you make a call to a resource with given a unique URI, it will be cached, by default, for 1 hour. You can change the default time-to-live (TTL) like so:
