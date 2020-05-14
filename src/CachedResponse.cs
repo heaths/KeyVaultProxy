@@ -32,6 +32,26 @@ namespace Sample
             }
         }
 
+        /// <inheritdoc/>
+        public override int Status { get; }
+
+        /// <inheritdoc/>
+        public override string ReasonPhrase { get; }
+
+        /// <inheritdoc/>
+        public override Stream ContentStream { get; set; }
+
+        /// <inheritdoc/>
+        public override string ClientRequestId { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="CachedResponse"/> is still valid (has not expired).
+        /// </summary>
+        internal bool IsValid => DateTimeOffset.Now <= _expires;
+
+        /// <inheritdoc/>
+        public override void Dispose() => ContentStream?.Dispose();
+
         /// <summary>
         /// Creates a new <see cref="CachedResponse"/>.
         /// </summary>
@@ -45,6 +65,43 @@ namespace Sample
             cachedResponse._expires = DateTimeOffset.Now + ttl;
 
             return cachedResponse;
+        }
+
+        /// <summary>
+        /// Clones this <see cref="CachedResponse"/> into a new <see cref="Response"/>.
+        /// </summary>
+        /// <param name="isAsync">Whether to copy the <see cref="ContentStream"/> asynchronously.</param>
+        /// <returns>A cloned <see cref="Response"/>.</returns>
+        internal async ValueTask<Response> CloneAsync(bool isAsync) =>
+            await CloneAsync(isAsync, this).ConfigureAwait(false);
+
+        /// <inheritdoc/>
+        protected override bool ContainsHeader(string name) => _headers.ContainsKey(name);
+
+        /// <inheritdoc/>
+        protected override IEnumerable<HttpHeader> EnumerateHeaders() =>
+            _headers.Select(kvp => new HttpHeader(kvp.Key, string.Join(",", kvp.Value)));
+
+        /// <inheritdoc/>
+        protected override bool TryGetHeader(string name, out string value)
+        {
+            if (_headers.TryGetValue(name, out IList<string> headerValues))
+            {
+                value = string.Join(",", headerValues);
+                return true;
+            }
+
+            value = null;
+            return false;
+        }
+
+        /// <inheritdoc/>
+        protected override bool TryGetHeaderValues(string name, out IEnumerable<string> values)
+        {
+            bool result = _headers.TryGetValue(name, out IList<string> headerValues);
+            values = headerValues;
+
+            return result;
         }
 
         private static async ValueTask<CachedResponse> CloneAsync(bool isAsync, Response response)
@@ -82,63 +139,6 @@ namespace Sample
             }
 
             return cachedResponse;
-        }
-
-        /// <inheritdoc/>
-        public override int Status { get; }
-
-        /// <inheritdoc/>
-        public override string ReasonPhrase { get; }
-
-        /// <inheritdoc/>
-        public override Stream ContentStream { get; set; }
-
-        /// <inheritdoc/>
-        public override string ClientRequestId { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether this <see cref="CachedResponse"/> has expired.
-        /// </summary>
-        internal bool IsExpired => DateTimeOffset.Now > _expires;
-
-        /// <inheritdoc/>
-        public override void Dispose() => ContentStream?.Dispose();
-
-        /// <summary>
-        /// Clones this <see cref="CachedResponse"/> into a new <see cref="Response"/>.
-        /// </summary>
-        /// <param name="isAsync">Whether to copy the <see cref="ContentStream"/> asynchronously.</param>
-        /// <returns>A cloned <see cref="Response"/>.</returns>
-        internal async ValueTask<Response> CloneAsync(bool isAsync) =>
-            await CloneAsync(isAsync, this).ConfigureAwait(false);
-
-        /// <inheritdoc/>
-        protected override bool ContainsHeader(string name) => _headers.ContainsKey(name);
-
-        /// <inheritdoc/>
-        protected override IEnumerable<HttpHeader> EnumerateHeaders() =>
-            _headers.Select(kvp => new HttpHeader(kvp.Key, string.Join(",", kvp.Value)));
-
-        /// <inheritdoc/>
-        protected override bool TryGetHeader(string name, out string value)
-        {
-            if (_headers.TryGetValue(name, out IList<string> headerValues))
-            {
-                value = string.Join(",", headerValues);
-                return true;
-            }
-
-            value = null;
-            return false;
-        }
-
-        /// <inheritdoc/>
-        protected override bool TryGetHeaderValues(string name, out IEnumerable<string> values)
-        {
-            bool result = _headers.TryGetValue(name, out IList<string> headerValues);
-            values = headerValues;
-
-            return result;
         }
     }
 }

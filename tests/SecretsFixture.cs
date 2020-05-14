@@ -13,14 +13,17 @@ using Azure.Security.KeyVault.Secrets;
 
 namespace Sample
 {
+    /// <summary>
+    /// A common test fixture to request secrets through the <see cref="KeyVaultProxy"/>.
+    /// </summary>
     public class SecretsFixture
     {
-        private KeyVaultProxy _proxy;
+        private readonly KeyVaultProxy _proxy;
+        private readonly TimeSpan _originalTtl;
 
-        public SecretClient Client { get; }
-
-        public string SecretName { get; } = "test-secret";
-
+        /// <summary>
+        /// Creates a new instance of the <see cref="SecretsFixture"/> class.
+        /// </summary>
         public SecretsFixture()
         {
             SecretClientOptions options = new SecretClientOptions
@@ -33,11 +36,38 @@ namespace Sample
             };
 
             options.AddPolicy(_proxy = new KeyVaultProxy(), HttpPipelinePosition.PerCall);
+            _originalTtl = _proxy.Ttl;
 
             Client = new SecretClient(new Uri("https://test.vault.azure.net"), new NullCredential(), options);
         }
 
-        public void Reset() => _proxy.Clear();
+        /// <summary>
+        /// Gets the <see cref="SecretClient"/> for tests.
+        /// </summary>
+        public SecretClient Client { get; }
+
+        /// <summary>
+        /// Gets the name of the test secret.
+        /// </summary>
+        public string SecretName { get; } = "test-secret";
+
+        /// <summary>
+        /// Gets or sets the time to live on the <see cref="KeyVaultProxy"/>.
+        /// </summary>
+        public TimeSpan Ttl
+        {
+            get => _proxy.Ttl;
+            set => _proxy.Ttl = value;
+        }
+
+        /// <summary>
+        /// Clears the proxy cache and resets the time to live to its default.
+        /// </summary>
+        public void Reset()
+        {
+            _proxy.Clear();
+            _proxy.Ttl = _originalTtl;
+        }
 
         private MockResponse CreateResponse(MockRequest request)
         {
@@ -74,27 +104,29 @@ namespace Sample
 
                 if (path.StartsWith($"/secrets", StringComparison.OrdinalIgnoreCase))
                 {
-                    return CreateResponse($@"[
-{{
-    ""id"": ""https://test.vault.azure.net/secrets/{SecretName}/275486a5f6cc41349e5fb480d068927c"",
-    ""attributes"": {{
-        ""enabled"": true,
-        ""created"": 1588832473,
-        ""updated"": 1588832473,
-        ""recoveryLevel"": ""Recoverable+Purgeable""
+                    return CreateResponse($@"{{
+""value"": [
+    {{
+        ""id"": ""https://test.vault.azure.net/secrets/{SecretName}/275486a5f6cc41349e5fb480d068927c"",
+        ""attributes"": {{
+            ""enabled"": true,
+            ""created"": 1588832473,
+            ""updated"": 1588832473,
+            ""recoveryLevel"": ""Recoverable+Purgeable""
+        }}
+    }},
+    {{
+        ""id"": ""https://test.vault.azure.net/secrets/other-secret/3a398dae0e7a4ccdbf32e5f3c306cc03"",
+        ""attributes"": {{
+            ""enabled"": true,
+            ""created"": 1588832617,
+            ""updated"": 1588832617,
+            ""recoveryLevel"": ""Recoverable+Purgeable""
+        }}
     }}
-}},
-{{
-    ""id"": ""https://test.vault.azure.net/secrets/other-secret/3a398dae0e7a4ccdbf32e5f3c306cc03"",
-    ""attributes"": {{
-        ""enabled"": true,
-        ""created"": 1588832617,
-        ""updated"": 1588832617,
-        ""recoveryLevel"": ""Recoverable+Purgeable""
-    }}
-}}
-
-]");
+],
+""nextLink"": null
+}}");
                 }
             }
 

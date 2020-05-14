@@ -1,9 +1,9 @@
 // Copyright 2020 Heath Stewart.
 // Licensed under the MIT License.See LICENSE.txt in the project root for license information.
 
+using Azure;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,61 +18,41 @@ namespace Sample
         private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
 
         /// <summary>
-        /// Gets a <see cref="CachedResponse"/>, if cached.
+        /// Gets a valid <see cref="Response"/> or requests and caches a <see cref="CachedResponse"/>.
         /// </summary>
-        /// <param name="uri">The URI to check, sans query parameters.</param>
-        /// <param name="cachedResponse">The <see cref="CachedResponse"/>, or null if not cached.</param>
-        /// <returns>true if a <see cref="CachedResponse"/> was cached; otherwise, false.</returns>
-        internal bool TryGetValue(string uri, [NotNullWhen(true)] out CachedResponse? cachedResponse)
+        /// <param name="isAsync">Whether certain operations should be performed asynchronously.</param>
+        /// <param name="uri">The URI sans query parameters to cache.</param>
+        /// <param name="action">The action to request a response.</param>
+        /// <returns>A new <see cref="Response"/>.</returns>
+        internal async ValueTask<Response> GetOrAddAsync(bool isAsync, string uri, TimeSpan ttl, Func<ValueTask<Response>> action)
         {
-            _lock.Wait();
+            // Try to get a valid response outside of the lock.
+            if (_cache.TryGetValue(uri, out CachedResponse cachedResponse) && cachedResponse.IsValid)
+            {
+                return await cachedResponse.CloneAsync(isAsync);
+            }
+
+            await _lock.WaitAsync().ConfigureAwait(false);
             try
             {
-                if (_cache.TryGetValue(uri, out CachedResponse response))
+                // Try again to get a valid cached response inside the lock before fetching.
+                if (_cache.TryGetValue(uri, out cachedResponse) && cachedResponse.IsValid)
                 {
-                    if (response.IsExpired)
-                    {
-                        _cache.Remove(uri);
-                    }
-                    else
-                    {
-                        cachedResponse = response;
-                        return true;
-                    }
+                    return await cachedResponse.CloneAsync(isAsync);
                 }
 
-                cachedResponse = null;
-                return false;
+                Response response = await action().ConfigureAwait(false);
+                if (response.Status == 200 && response.ContentStream is { })
+                {
+                    cachedResponse = await CachedResponse.CreateAsync(isAsync, response, ttl);
+                    _cache[uri] = cachedResponse;
+                }
+
+                return response;
             }
             finally
             {
                 _lock.Release();
-            }
-        }
-
-        /// <summary>
-        /// Adds a <see cref="CachedResponse"/> to the cache.
-        /// </summary>
-        /// <param name="uri">The URI of the response to cache.</param>
-        /// <param name="addFactory">A method which returns the <see cref="CachedResponse"/> to add.</param>
-        /// <returns>A <see cref="ValueTask"/> on which to await this asynchronous method.</returns>
-        internal async ValueTask AddAsync(string uri, Func<ValueTask<CachedResponse>> addFactory)
-        {
-            if (!_cache.ContainsKey(uri))
-            {
-                await _lock.WaitAsync().ConfigureAwait(false);
-                try
-                {
-                    if (!_cache.ContainsKey(uri))
-                    {
-                        CachedResponse cachedResponse = await addFactory().ConfigureAwait(false);
-                        _cache.Add(uri, cachedResponse);
-                    }
-                }
-                finally
-                {
-                    _lock.Release();
-                }
             }
         }
 

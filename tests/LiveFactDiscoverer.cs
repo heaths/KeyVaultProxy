@@ -21,8 +21,17 @@ namespace Sample
 
         public IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo factAttribute)
         {
-            yield return new LiveTestCase(_diagnosticMessageSink, discoveryOptions, testMethod, false);
-            yield return new LiveTestCase(_diagnosticMessageSink, discoveryOptions, testMethod, true);
+            Synchronicity options = factAttribute.GetNamedArgument<Synchronicity>(nameof(LiveFactAttribute.Synchronicity));
+
+            if ((options & Synchronicity.Asynchronous) == 0)
+            {
+                yield return new LiveTestCase(_diagnosticMessageSink, discoveryOptions, testMethod, false);
+            }
+
+            if ((options & Synchronicity.Synchronous) == 0)
+            {
+                yield return new LiveTestCase(_diagnosticMessageSink, discoveryOptions, testMethod, true);
+            }
         }
 
         private class LiveTestCase : XunitTestCase

@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Core;
 using Azure.Core.Pipeline;
 
@@ -36,7 +35,7 @@ namespace Sample
         /// <summary>
         /// Gets the time to live for cached responses.
         /// </summary>
-        public TimeSpan Ttl { get; }
+        public TimeSpan Ttl { get; internal set; }
 
         /// <summary>
         /// Clears the in-memory cache.
@@ -69,28 +68,22 @@ namespace Sample
         private async ValueTask ProcessAsync(bool isAsync, HttpMessage message, ReadOnlyMemory<HttpPipelinePolicy> pipeline)
         {
             Request request = message.Request;
-            if (request.Method != RequestMethod.Get)
+            if (request.Method == RequestMethod.Get)
             {
-                await ProcessNextAsync(isAsync, message, pipeline).ConfigureAwait(false);
-                return;
-            }
+                string uri = request.Uri.ToUri().GetLeftPart(UriPartial.Path);
+                if (IsSupported(uri))
+                {
+                    message.Response = await _cache.GetOrAddAsync(isAsync, uri, Ttl, async () =>
+                    {
+                        await ProcessNextAsync(isAsync, message, pipeline).ConfigureAwait(false);
+                        return message.Response;
+                    });
 
-            string uri = request.Uri.ToUri().GetLeftPart(UriPartial.Path);
-            bool isSupported = IsSupported(uri);
-
-            if (isSupported && _cache.TryGetValue(uri, out CachedResponse? cachedResponse))
-            {
-                message.Response = await cachedResponse.CloneAsync(isAsync);
-                return;
+                    return;
+                }
             }
 
             await ProcessNextAsync(isAsync, message, pipeline).ConfigureAwait(false);
-
-            Response response = message.Response;
-            if (isSupported && response.Status == 200 && response.ContentStream is { })
-            {
-                await _cache.AddAsync(uri, () => CachedResponse.CreateAsync(isAsync, response, Ttl));
-            }
         }
 
         private async ValueTask ProcessNextAsync(bool isAsync, HttpMessage message, ReadOnlyMemory<HttpPipelinePolicy> pipeline)
