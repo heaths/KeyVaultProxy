@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sample
+namespace AzureSample.Security.KeyVault.Proxy
 {
     /// <summary>
     /// Maintains a cache of <see cref="CachedResponse"/> items.

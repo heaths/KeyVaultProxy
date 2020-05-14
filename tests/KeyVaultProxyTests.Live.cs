@@ -11,7 +11,7 @@ using Azure.Core.Diagnostics;
 using Azure.Security.KeyVault.Secrets;
 using Xunit;
 
-namespace Sample
+namespace AzureSample.Security.KeyVault.Proxy
 {
     public partial class KeyVaultProxyTests : IClassFixture<SecretsFixture>, IDisposable
     {

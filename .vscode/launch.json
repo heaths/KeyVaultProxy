@@ -6,8 +6,10 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/tests/bin/Debug/netcoreapp2.1/KeyVaultProxy.Tests.dll",
-      "args": [],
+      "program": "dotnet",
+      "args": [
+        "test"
+      ],
       "cwd": "${workspaceFolder}/tests",
       "console": "internalConsole",
       "stopAtEntry": false

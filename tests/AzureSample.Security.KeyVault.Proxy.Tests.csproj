@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\KeyVaultProxy.csproj" />
+    <ProjectReference Include="..\src\AzureSample.Security.KeyVault.Proxy.csproj" />
   </ItemGroup>
 
 </Project>

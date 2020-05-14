@@ -4,12 +4,12 @@
 using Xunit;
 using Xunit.Sdk;
 
-namespace Sample
+namespace AzureSample.Security.KeyVault.Proxy
 {
     /// <summary>
     /// Test attribute to run tests synchronously or asynchronously in conjunction with a <see cref="SecretsFixture"/>.
     /// </summary>
-    [XunitTestCaseDiscoverer("Sample.LiveFactDiscoverer", "KeyVaultProxy.Tests")]
+    [XunitTestCaseDiscoverer("AzureSample.Security.KeyVault.Proxy.LiveFactDiscoverer", "AzureSample.Security.KeyVault.Proxy.Tests")]
     public class LiveFactAttribute : FactAttribute
     {
         /// <summary>

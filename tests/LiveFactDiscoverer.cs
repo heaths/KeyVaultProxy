@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Sample
+namespace AzureSample.Security.KeyVault.Proxy
 {
     public class LiveFactDiscoverer : IXunitTestCaseDiscoverer
     {

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Core;
 
-namespace Sample
+namespace AzureSample.Security.KeyVault.Proxy
 {
     /// <summary>
     /// A cached <see cref="Response"/> that is cloned and returned for subsequent requests.

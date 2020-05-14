@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <RootNamespace>Sample</RootNamespace>
+    <RootNamespace>AzureSample.Security.KeyVault.Proxy</RootNamespace>
     <LangVersion>latest</LangVersion>
     <GenerateDocumentation>true</GenerateDocumentation>
   </PropertyGroup>
