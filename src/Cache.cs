@@ -32,7 +32,15 @@ namespace AzureSample.Security.KeyVault.Proxy
                 return await cachedResponse.CloneAsync(isAsync);
             }
 
-            await _lock.WaitAsync().ConfigureAwait(false);
+            if (isAsync)
+            {
+                await _lock.WaitAsync().ConfigureAwait(false);
+            }
+            else
+            {
+                _lock.Wait();
+            }
+
             try
             {
                 // Try again to get a valid cached response inside the lock before fetching.
