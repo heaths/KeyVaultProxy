@@ -4,7 +4,7 @@
 using System;
 using Xunit;
 
-namespace AzureSample.Security.KeyVault.Proxy
+namespace AzureSamples.Security.KeyVault.Proxy
 {
     public partial class KeyVaultProxyTests
     {

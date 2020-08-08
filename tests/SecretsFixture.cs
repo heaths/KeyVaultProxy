@@ -11,7 +11,7 @@ using Azure.Core;
 using Azure.Core.TestFramework;
 using Azure.Security.KeyVault.Secrets;
 
-namespace AzureSample.Security.KeyVault.Proxy
+namespace AzureSamples.Security.KeyVault.Proxy
 {
     /// <summary>
     /// A common test fixture to request secrets through the <see cref="KeyVaultProxy"/>.

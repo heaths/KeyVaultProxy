@@ -3,4 +3,4 @@
 
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("AzureSample.Security.KeyVault.Proxy.Tests")]
+[assembly: InternalsVisibleTo("AzureSamples.Security.KeyVault.Proxy.Tests")]

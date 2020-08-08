@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureSample.Security.KeyVault.Proxy", "src\AzureSample.Security.KeyVault.Proxy.csproj", "{FA43C911-4EAB-4D84-AA0D-128A8242E8CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureSamples.Security.KeyVault.Proxy", "src\AzureSamples.Security.KeyVault.Proxy.csproj", "{FA43C911-4EAB-4D84-AA0D-128A8242E8CD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureSample.Security.KeyVault.Proxy.Tests", "tests\AzureSample.Security.KeyVault.Proxy.Tests.csproj", "{B1DBCC52-CD7E-44B4-9CE2-CC04379AB9B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureSamples.Security.KeyVault.Proxy.Tests", "tests\AzureSamples.Security.KeyVault.Proxy.Tests.csproj", "{B1DBCC52-CD7E-44B4-9CE2-CC04379AB9B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
