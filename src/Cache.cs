@@ -26,12 +26,6 @@ namespace AzureSamples.Security.KeyVault.Proxy
         /// <returns>A new <see cref="Response"/>.</returns>
         internal async ValueTask<Response> GetOrAddAsync(bool isAsync, string uri, TimeSpan ttl, Func<ValueTask<Response>> action)
         {
-            // Try to get a valid response outside of the lock.
-            if (_cache.TryGetValue(uri, out CachedResponse cachedResponse) && cachedResponse.IsValid)
-            {
-                return await cachedResponse.CloneAsync(isAsync);
-            }
-
             if (isAsync)
             {
                 await _lock.WaitAsync().ConfigureAwait(false);
@@ -43,16 +37,16 @@ namespace AzureSamples.Security.KeyVault.Proxy
 
             try
             {
-                // Try again to get a valid cached response inside the lock before fetching.
-                if (_cache.TryGetValue(uri, out cachedResponse) && cachedResponse.IsValid)
+                // Try to get a valid cached response inside the lock before fetching.
+                if (_cache.TryGetValue(uri, out CachedResponse cachedResponse) && cachedResponse.IsValid)
                 {
-                    return await cachedResponse.CloneAsync(isAsync);
+                    return await cachedResponse.CloneAsync(isAsync).ConfigureAwait(false);
                 }
 
                 Response response = await action().ConfigureAwait(false);
                 if (response.Status == 200 && response.ContentStream is { })
                 {
-                    cachedResponse = await CachedResponse.CreateAsync(isAsync, response, ttl);
+                    cachedResponse = await CachedResponse.CreateAsync(isAsync, response, ttl).ConfigureAwait(false);
                     _cache[uri] = cachedResponse;
                 }
 
