@@ -32,7 +32,7 @@ jobs:
 
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '2.1.20'
+        dotnet-version: '2.1.808'
 
     - uses: actions/setup-dotnet@v1
       with:
@@ -42,7 +42,7 @@ jobs:
       shell: pwsh
       run: |
         # Work around https://github.com/actions/setup-dotnet/issues/25
-        $DOTNET_21_ROOT = $env:DOTNET_ROOT -replace '3\.1\.\d+', '2.1.20'
+        $DOTNET_21_ROOT = $env:DOTNET_ROOT -replace '3\.1\.\d+', '2.1.808'
         get-childitem "$DOTNET_21_ROOT/shared" | copy-item -recurse -destination "${env:DOTNET_ROOT}/shared"
 
     - name: Build
