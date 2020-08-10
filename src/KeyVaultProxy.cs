@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Core.Pipeline;
 
-namespace AzureSample.Security.KeyVault.Proxy
+namespace AzureSamples.Security.KeyVault.Proxy
 {
     /// <summary>
     /// Cache <c>GET</c> requests for secrets, keys, or certificates for Azure Key Vault clients.

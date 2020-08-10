@@ -4,7 +4,7 @@
 using Xunit;
 using Xunit.Sdk;
 
-namespace AzureSample.Security.KeyVault.Proxy
+namespace AzureSamples.Security.KeyVault.Proxy
 {
     /// <summary>
     /// Test attribute to run tests synchronously or asynchronously in conjunction with a <see cref="SecretsFixture"/>.

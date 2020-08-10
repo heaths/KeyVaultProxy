@@ -11,14 +11,14 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Core;
 
-namespace AzureSample.Security.KeyVault.Proxy
+namespace AzureSamples.Security.KeyVault.Proxy
 {
     /// <summary>
     /// A cached <see cref="Response"/> that is cloned and returned for subsequent requests.
     /// </summary>
     internal class CachedResponse : Response
     {
-        private readonly Dictionary<string, IList<string>> _headers = new Dictionary<string, IList<string>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ResponseHeaders _headers;
         private DateTimeOffset _expires;
 
         private CachedResponse(int status, string reasonPhrase, ResponseHeaders headers)
@@ -26,10 +26,7 @@ namespace AzureSample.Security.KeyVault.Proxy
             Status = status;
             ReasonPhrase = reasonPhrase;
 
-            foreach (HttpHeader header in headers)
-            {
-                _headers[header.Name] = header.Value?.Split(',');
-            }
+            _headers = headers;
         }
 
         /// <inheritdoc/>
@@ -76,33 +73,16 @@ namespace AzureSample.Security.KeyVault.Proxy
             await CloneAsync(isAsync, this).ConfigureAwait(false);
 
         /// <inheritdoc/>
-        protected override bool ContainsHeader(string name) => _headers.ContainsKey(name);
+        protected override bool ContainsHeader(string name) => _headers.Contains(name);
 
         /// <inheritdoc/>
-        protected override IEnumerable<HttpHeader> EnumerateHeaders() =>
-            _headers.Select(kvp => new HttpHeader(kvp.Key, string.Join(",", kvp.Value)));
+        protected override IEnumerable<HttpHeader> EnumerateHeaders() => _headers;
 
         /// <inheritdoc/>
-        protected override bool TryGetHeader(string name, out string value)
-        {
-            if (_headers.TryGetValue(name, out IList<string> headerValues))
-            {
-                value = string.Join(",", headerValues);
-                return true;
-            }
-
-            value = null;
-            return false;
-        }
+        protected override bool TryGetHeader(string name, out string value) => _headers.TryGetValue(name, out value);
 
         /// <inheritdoc/>
-        protected override bool TryGetHeaderValues(string name, out IEnumerable<string> values)
-        {
-            bool result = _headers.TryGetValue(name, out IList<string> headerValues);
-            values = headerValues;
-
-            return result;
-        }
+        protected override bool TryGetHeaderValues(string name, out IEnumerable<string> values) => _headers.TryGetValues(name, out values);
 
         private static async ValueTask<CachedResponse> CloneAsync(bool isAsync, Response response)
         {

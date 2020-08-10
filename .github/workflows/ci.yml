@@ -29,17 +29,45 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.201'
+        dotnet-version: '2.1.808'
 
-    - id: test
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
+
+    - name: Copy .NET Core runtime SxS
+      shell: pwsh
+      run: |
+        # Work around https://github.com/actions/setup-dotnet/issues/25
+        $DOTNET_21_ROOT = $env:DOTNET_ROOT -replace '3\.1\.\d+', '2.1.808'
+        if ($env:OS -eq 'Windows_NT') {
+          xcopy "$DOTNET_21_ROOT\shared" "${env:DOTNET_ROOT}\shared" /b /e /h /q /y
+        } else {
+          rsync -a $DOTNET_21_ROOT/shared/* ${env:DOTNET_ROOT}/shared
+        }
+
+    - name: Build
+      run: >
+        dotnet build KeyVaultProxy.sln
+        -c Release -o bin/Release
+      env:
+        DOTNET_CLI_TELEMETRY_OPTOUT: 1
+        DOTNET_NOLOGO: 1
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+
+    - id: Test
+      name: test
       run: >
         dotnet test KeyVaultProxy.sln
         -c Release -o bin/Release
+        --no-build
         -l trx -r bin/Release/TestResults/${{ matrix.platform }}
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
+        DOTNET_NOLOGO: 1
         DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
 
     - uses: actions/upload-artifact@v2
@@ -55,17 +83,19 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.201'
+        dotnet-version: '3.1.x'
         source-url: https://nuget.pkg.github.com/heaths/index.json
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - run: >
+    - name: Pack
+      run: >
         dotnet pack KeyVaultProxy.sln
         -c Release -o bin/Release
         --version-suffix 'preview.${{ github.run_number }}'
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
+        DOTNET_NOLOGO: 1
         DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
 
     - uses: actions/upload-artifact@v2
@@ -73,5 +103,6 @@ jobs:
         name: artifacts
         path: bin/Release/*.nupkg
 
-    - run: dotnet nuget push bin/Release/*.nupkg
+    - name: Publish
+      run: dotnet nuget push bin/Release/*.nupkg
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
