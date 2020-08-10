@@ -29,19 +29,32 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '2.1.20'
+
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '3.1.x'
 
-    - name: install additional dependencies
-      run: sudo apt-get install -y dotnet-runtime-2.1
+    - name: Copy .NET Core SxS
+      shell: pwsh
+      run: |
+        # Work around https://github.com/actions/setup-dotnet/issues/25
+        $DOTNET_21_ROOT = $env:DOTNET_ROOT -replace '3\.1\.\d+', '2.1.20'
+        get-childitem "$DOTNET_21_ROOT/shared" | copy-item -recurse -destination "${env:DOTNET_ROOT}/shared"
 
-    - name: build
+    - name: Build
       run: >
         dotnet build KeyVaultProxy.sln
         -c Release -o bin/Release
+      env:
+        DOTNET_CLI_TELEMETRY_OPTOUT: 1
+        DOTNET_NOLOGO: 1
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
 
-    - id: test
+    - id: Test
       name: test
       run: >
         dotnet test KeyVaultProxy.sln
@@ -71,7 +84,7 @@ jobs:
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: pack
+    - name: Pack
       run: >
         dotnet pack KeyVaultProxy.sln
         -c Release -o bin/Release
@@ -86,6 +99,6 @@ jobs:
         name: artifacts
         path: bin/Release/*.nupkg
 
-    - name: publish
+    - name: Publish
       run: dotnet nuget push bin/Release/*.nupkg
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
