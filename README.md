@@ -12,9 +12,12 @@ To use this sample, you will need to install the [Azure.Core](https://nuget.org/
 * [Azure.Security.KeyVault.Keys](https://nuget.org/packages/Azure.Security.KeyVault.Keys)
 * [Azure.Security.KeyVault.Secrets](https://nuget.org/packages/Azure.Security.KeyVault.Secrets)
 
-You will also need to install the [latest version of AzureSamples.Security.KeyVault.Proxy](https://github.com/heaths/KeyVaultProxy/packages/351148), for which you must [current authenticate](https://help.github.com/packages/using-github-packages-with-your-projects-ecosystem/configuring-dotnet-cli-for-use-with-github-packages).
+Once you build this project, you can reference this sample in your own project by either:
 
-After the package is installed, be sure to import the namespace for ease:
+* Adding a `<ProjectReference>` to this sample project in your own project, or
+* Running `dotnet pack` on this sample project, publish it to a private NuGet source, and add a `<PackageReference>` to `AzureSamples.Security.KeyVault.Proxy`.
+
+After you reference this sample, in your own project source, add the following:
 
 ```csharp
 using AzureSamples.Security.KeyVault.Proxy;
