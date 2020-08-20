@@ -1,5 +1,5 @@
-﻿// Copyright 2020 Heath Stewart.
-// Licensed under the MIT License.See LICENSE.txt in the project root for license information.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 using Xunit;
 using Xunit.Sdk;
@@ -9,7 +9,7 @@ namespace AzureSamples.Security.KeyVault.Proxy
     /// <summary>
     /// Test attribute to run tests synchronously or asynchronously in conjunction with a <see cref="SecretsFixture"/>.
     /// </summary>
-    [XunitTestCaseDiscoverer("AzureSample.Security.KeyVault.Proxy.LiveFactDiscoverer", "AzureSample.Security.KeyVault.Proxy.Tests")]
+    [XunitTestCaseDiscoverer("AzureSamples.Security.KeyVault.Proxy.LiveFactDiscoverer", "AzureSamples.Security.KeyVault.Proxy.Tests")]
     public class LiveFactAttribute : FactAttribute
     {
         /// <summary>
