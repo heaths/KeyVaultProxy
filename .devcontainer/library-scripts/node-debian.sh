@@ -63,7 +63,7 @@ if [ "${USERNAME}" != "root" ] && id -u $USERNAME > /dev/null 2>&1; then
     tee -a /home/${USERNAME}/.bashrc /home/${USERNAME}/.zshrc >> /root/.zshrc \
 << EOF
 EOF
-    
+
     # Add NVM init and add code to update NVM ownership if UID/GID changes
     tee -a /root/.bashrc /root/.zshrc /home/${USERNAME}/.bashrc >> /home/${USERNAME}/.zshrc \
 <<EOF
@@ -74,7 +74,7 @@ EOF
                 sudo chown -R ${USERNAME}:root \$NVM_DIR
             fi
 EOF
-    
+
     # Update ownership
     chown ${USERNAME} ${NVM_DIR} /home/${USERNAME}/.bashrc /home/${USERNAME}/.zshrc
 fi
@@ -92,7 +92,7 @@ suIf() {
 # Run NVM installer as non-root if needed
 suIf "$(cat \
 << EOF
-        curl -so- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash 
+        curl -so- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
         if [ "${NODE_VERSION}" != "" ]; then
             source $NVM_DIR/nvm.sh
             nvm alias default ${NODE_VERSION}
